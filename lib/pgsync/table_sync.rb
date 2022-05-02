@@ -152,15 +152,17 @@ module PgSync
 
     def non_deferrable_constraints(data_source)
       query = <<~SQL
-        SELECT
-          table_schema AS schema,
-          table_name AS table,
-          constraint_name
+        SELECT DISTINCT
+          information_schema.table_constraints.table_schema AS schema,
+          information_schema.table_constraints.table_name AS table,
+          information_schema.table_constraints.constraint_name
         FROM
           information_schema.table_constraints
+        JOIN pg_tables ON pg_tables.tablename = information_schema.table_constraints.table_name
+        AND pg_tables.tableowner = current_user
         WHERE
-          constraint_type = 'FOREIGN KEY' AND
-          is_deferrable = 'NO'
+          information_schema.table_constraints.constraint_type = 'FOREIGN KEY' AND
+          information_schema.table_constraints.is_deferrable = 'NO'
       SQL
       data_source.execute(query).group_by { |r| Table.new(r["schema"], r["table"]) }.map do |k, v|
         [k, v.map { |r| r["constraint_name"] }]

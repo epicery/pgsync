@@ -1,3 +1,18 @@
+## 0.7.3 (2022-11-09)
+
+- Fixed issue with pg 1.4.4
+- Fixed output when `pg_restore` not found
+
+## 0.7.2 (2022-09-19)
+
+- Improved error message when a primary key is required
+- Switched to monotonic time
+- Fixed schema sync with Homebrew Postgres 14.5
+
+## 0.7.1 (2022-07-06)
+
+- Fixed random letter data rule generating non-letter
+
 ## 0.7.0 (2022-03-10)
 
 - Changed `--defer-constraints` to `--defer-constraints-v1`

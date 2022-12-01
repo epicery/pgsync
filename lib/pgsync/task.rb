@@ -88,7 +88,7 @@ module PgSync
 
       copy_to_command = "COPY (SELECT #{copy_fields} FROM #{quoted_table}#{sql_clause}) TO STDOUT"
       if opts[:in_batches]
-        raise Error, "No primary key" if primary_key.empty?
+        raise Error, "Primary key required for --in-batches" if primary_key.empty?
         primary_key = primary_key.first
 
         destination.truncate(table) if opts[:truncate]
@@ -125,7 +125,11 @@ module PgSync
           end
         end
       elsif !opts[:truncate] && (opts[:overwrite] || opts[:preserve] || !sql_clause.empty?)
-        raise Error, "No primary key" if primary_key.empty?
+        if primary_key.empty?
+          raise Error, "Primary key required for --overwrite" if opts[:overwrite]
+          raise Error, "Primary key required for --preserve" if opts[:preserve]
+          raise Error, "Primary key required to sync specific rows"
+        end
 
         # create a temp table
         temp_table = "pgsync_#{rand(1_000_000_000)}"
@@ -256,9 +260,11 @@ module PgSync
         when "random_time"
           "NOW() - (RANDOM() * 100000000)::int * INTERVAL '1 second'"
         when "random_ip"
+          # casting double to int rounds
           "(1 + RANDOM() * 254)::int::text || '.0.0.1'"
         when "random_letter"
-          "chr(65 + (RANDOM() * 26)::int)"
+          # casting double to int rounds
+          "chr(65 + (RANDOM() * 25)::int)"
         when "random_string"
           "RIGHT(MD5(RANDOM()::text), 10)"
         when "null", nil

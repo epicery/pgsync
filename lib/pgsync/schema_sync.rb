@@ -17,6 +17,11 @@ module PgSync
         raise Error, "Cannot use --preserve with --schema-first or --schema-only"
       end
 
+      # generate commands before starting spinner
+      # for better error output if pg_restore not found
+      dump_command = dump_command()
+      restore_command = restore_command()
+
       show_spinner = output.tty? && !opts[:debug]
 
       if show_spinner
@@ -29,7 +34,7 @@ module PgSync
       # if spinner, capture lines to show on error
       lines = []
       success =
-        run_command do |line|
+        run_command(dump_command, restore_command) do |line|
           if show_spinner
             lines << line
           else
@@ -51,7 +56,7 @@ module PgSync
 
     private
 
-    def run_command
+    def run_command(dump_command, restore_command)
       err_r, err_w = IO.pipe
       Open3.pipeline_start(dump_command, restore_command, err: err_w) do |wait_thrs|
         err_w.close
@@ -62,8 +67,10 @@ module PgSync
       end
     end
 
-    def pg_restore_version
-      `pg_restore --version`.lines[0].chomp.split(" ")[-1].split(/[^\d.]/)[0]
+    # --if-exists introduced in Postgres 9.4
+    # not ideal, but simpler than trying to parse version
+    def supports_if_exists?
+      `pg_restore --help`.include?("--if-exists")
     rescue Errno::ENOENT
       raise Error, "pg_restore not found"
     end
@@ -80,7 +87,7 @@ module PgSync
 
     def restore_command
       cmd = ["pg_restore", "--verbose", "--no-owner", "--no-acl", "--clean"]
-      cmd << "--if-exists" if Gem::Version.new(pg_restore_version) >= Gem::Version.new("9.4.0")
+      cmd << "--if-exists" if supports_if_exists?
       cmd.concat(["-d", @destination.url])
     end
 

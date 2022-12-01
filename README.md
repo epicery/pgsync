@@ -19,7 +19,13 @@ pgsync is a command line tool. To install, run:
 gem install pgsync
 ```
 
-This will give you the `pgsync` command. You can also install it with [Homebrew](#homebrew). If installation fails, you may need to install [dependencies](#dependencies).
+This will give you the `pgsync` command. If installation fails, you may need to install [dependencies](#dependencies).
+
+You can also install it with Homebrew:
+
+```sh
+brew install pgsync
+```
 
 ## Setup
 
@@ -347,13 +353,16 @@ Bundler.with_unbundled_env do
 end
 ```
 
-## Homebrew
+## Docker
 
-On Mac, you can use:
+Get the [Docker image](https://hub.docker.com/r/ankane/pgsync) with:
 
 ```sh
-brew install ankane/brew/pgsync
+docker pull ankane/pgsync
+alias pgsync="docker run -ti ankane/pgsync"
 ```
+
+This will give you the `pgsync` command.
 
 ## Dependencies
 
@@ -362,7 +371,7 @@ If installation fails, your system may be missing Ruby or libpq.
 On Mac, run:
 
 ```sh
-brew install postgresql
+brew install libpq
 ```
 
 On Ubuntu, run:
@@ -384,6 +393,18 @@ To use master, run:
 ```sh
 gem install specific_install
 gem specific_install https://github.com/ankane/pgsync.git
+```
+
+With Homebrew, run:
+
+```sh
+brew upgrade pgsync
+```
+
+With Docker, run:
+
+```sh
+docker pull ankane/pgsync
 ```
 
 ## Related Projects

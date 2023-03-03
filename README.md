@@ -143,7 +143,7 @@ pgsync product:123
 
 ## Schema
 
-Sync schema before the data (this wipes out existing data)
+Sync the schema before the data (this wipes out existing data)
 
 ```sh
 pgsync --schema-first
@@ -155,7 +155,7 @@ Specify tables
 pgsync table1,table2 --schema-first
 ```
 
-Or just the schema
+Sync the schema without data (this wipes out existing data)
 
 ```sh
 pgsync --schema-only
@@ -234,6 +234,14 @@ Disable user triggers with:
 
 ```sh
 pgsync --disable-user-triggers
+```
+
+## Sequences
+
+Skip syncing sequences with:
+
+```sh
+pgsync --no-sequences
 ```
 
 ## Append-Only Tables
